@@ -9,3 +9,44 @@ yarn-error.log*
 coverage/
 /.pnp
 .pnp.js
+
+# Logs
+*.log
+logs/
+pnpm-debug.log*
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# Vite / build cache
+.vite/
+.cache/
+/.turbo
+
+# Next / Gatsby / other build outputs
+.next/
+out/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Environment files (allow example files)
+.env.local
+.env.*.local
+.env.test
+!.env.example
+
+# OS-generated files
+Thumbs.db
+ehthumbs.db
+*.tmp
+*.temp
+
