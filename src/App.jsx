@@ -1,7 +1,16 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
-import { Box, CircularProgress, Alert } from '@mui/material'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Paper,
+  Box,
+  CircularProgress,
+  Alert
+} from '@mui/material'
 
 const columns = [
   { field: 'name', headerName: 'Name', flex: 1, minWidth: 150 },
@@ -54,7 +63,6 @@ export default function App() {
       }
     }
 
-    // Only attempt fetch if an API URL is configured (fallback still tries /api/products)
     fetchProducts()
     return () => {
       mounted = false
@@ -62,26 +70,48 @@ export default function App() {
   }, [apiUrl])
 
   return (
-    <div className="app" style={{ width: '100%' }}>
-      <header>
-        <h1>Products</h1>
-      </header>
+    <>
+      <AppBar position="static" color="primary" elevation={3}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Products
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+            Catalog
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-      {error && (
-        <Box mb={2}>
-          <Alert severity="error">Failed to load products: {error}</Alert>
-        </Box>
-      )}
+      <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
+        <Paper elevation={4} sx={{ p: 2, borderRadius: 3 }}>
+          {error && (
+            <Box mb={2}>
+              <Alert severity="error">Failed to load products: {error}</Alert>
+            </Box>
+          )}
 
-      <Box sx={{ height: 420, width: '100%' }}>
-        {loading ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-            <CircularProgress />
+          <Box sx={{ height: 520, width: '100%', mt: error ? 2 : 0 }}>
+            {loading ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                pageSize={5}
+                rowsPerPageOptions={[5]}
+                disableSelectionOnClick
+                sx={{
+                  border: 'none',
+                  '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(37,99,235,0.06)' },
+                  '& .MuiDataGrid-columnHeaders': { backgroundColor: 'rgba(37,99,235,0.06)' }
+                }}
+              />
+            )}
           </Box>
-        ) : (
-          <DataGrid rows={rows} columns={columns} pageSize={5} rowsPerPageOptions={[5]} disableSelectionOnClick />
-        )}
-      </Box>
-    </div>
+        </Paper>
+      </Container>
+    </>
   )
 }
