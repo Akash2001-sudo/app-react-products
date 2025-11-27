@@ -55,7 +55,8 @@ function normalizeItems(data) {
 
 export default function App() {
   // Read API URL from Vite env var VITE_PRODUCTS_API; fallback to /api/products
-  const apiUrl = import.meta.env.VITE_PRODUCTS_API
+ const apiUrl = import.meta.env.VITE_PRODUCTS_API ?? "https://core-products.onrender.com/api/products";
+
 
   const { data, isLoading, isError, error, addProduct, addStatus, deleteProducts, deleteStatus } = useProducts(apiUrl)
   const rows = useMemo(() => normalizeItems(data ?? []), [data])
