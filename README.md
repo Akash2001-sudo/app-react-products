@@ -23,3 +23,13 @@ npm run dev
 Open `http://localhost:3000` in your browser.
 
 Note: this scaffold uses Vite + React. If you prefer Create React App, say so and I can switch scaffolding.
+
+## React Query
+
+This app now uses `@tanstack/react-query` to fetch and cache remote data (products). After pulling the latest files, run:
+
+```powershell
+npm install
+```
+
+If you are using a remote API, set `VITE_PRODUCTS_API` in `.env` or your local environment to point to the endpoint returning product records.

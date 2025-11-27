@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { DataGrid } from '@mui/x-data-grid'
 import {
   AppBar,
@@ -37,37 +38,24 @@ function normalizeItems(data) {
 }
 
 export default function App() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-
   // Read API URL from Vite env var VITE_PRODUCTS_API; fallback to /api/products
   const apiUrl = import.meta.env.VITE_PRODUCTS_API || '/api/products'
 
-  useEffect(() => {
-    let mounted = true
-    async function fetchProducts() {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await fetch(apiUrl)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-        if (!mounted) return
-        setRows(normalizeItems(data))
-      } catch (err) {
-        if (!mounted) return
-        setError(String(err))
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
+  async function fetchProducts() {
+    const res = await fetch(apiUrl)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return res.json()
+  }
 
-    fetchProducts()
-    return () => {
-      mounted = false
-    }
-  }, [apiUrl])
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['products', apiUrl],
+    queryFn: fetchProducts,
+    staleTime: 1000 * 60, // 1 minute
+    refetchOnWindowFocus: false,
+    retry: 1
+  })
+
+  const rows = useMemo(() => normalizeItems(data ?? []), [data])
 
   return (
     <>
@@ -84,14 +72,14 @@ export default function App() {
 
       <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
         <Paper elevation={4} sx={{ p: 2, borderRadius: 3 }}>
-          {error && (
+          {isError && (
             <Box mb={2}>
-              <Alert severity="error">Failed to load products: {error}</Alert>
+              <Alert severity="error">Failed to load products: {error?.message ?? String(error)}</Alert>
             </Box>
           )}
 
-          <Box sx={{ height: 520, width: '100%', mt: error ? 2 : 0 }}>
-            {loading ? (
+          <Box sx={{ height: 520, width: '100%', mt: isError ? 2 : 0 }}>
+            {isLoading ? (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <CircularProgress />
               </Box>
