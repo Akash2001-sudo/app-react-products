@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { fetchProductsApi, createProductApi } from '../api/products'
 
 export function useProducts(apiUrl) {
   const queryClient = useQueryClient()
 
-  const fetchProducts = useCallback(async () => {
-    const res = await fetch(apiUrl)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return res.json()
-  }, [apiUrl])
+  const fetchProducts = useCallback(async () => fetchProductsApi(apiUrl), [apiUrl])
 
   const query = useQuery({
     queryKey: ['products', apiUrl],
@@ -18,15 +15,7 @@ export function useProducts(apiUrl) {
     retry: 1
   })
 
-  const createProduct = useCallback(async (payload) => {
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return res.json()
-  }, [apiUrl])
+  const createProduct = useCallback(async (payload) => createProductApi(apiUrl, payload), [apiUrl])
 
   const mutation = useMutation({
     mutationFn: createProduct,

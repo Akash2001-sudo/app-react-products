@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { useMemo, useState } from 'react'
 import useProducts from './hooks/useProducts'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import ProductTable from './components/ProductTable'
+import AddProductDialog from './components/AddProductDialog'
 import {
   AppBar,
   Toolbar,
@@ -9,10 +10,6 @@ import {
   Container,
   Paper,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Box,
   CircularProgress,
@@ -64,7 +61,6 @@ export default function App() {
 
   // dialog + form state for adding a new product
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ name: '', description: '', price: '' })
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [isAdding, setIsAdding] = useState(false)
 
@@ -115,19 +111,7 @@ export default function App() {
                 <CircularProgress />
               </Box>
             ) : (
-              <DataGrid
-                rows={displayRows}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableSelectionOnClick
-                components={{ Toolbar: GridToolbar }}
-                sx={{
-                  border: 'none',
-                  '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(37,99,235,0.06)' },
-                  '& .MuiDataGrid-columnHeaders': { backgroundColor: 'rgba(37,99,235,0.06)' }
-                }}
-              />
+              <ProductTable rows={displayRows} columns={columns} loading={isLoading} error={isError ? error : null} />
             )}
           </Box>
         </Paper>
@@ -139,57 +123,30 @@ export default function App() {
       </Backdrop>
 
       {/* Add Product Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Add Product</DialogTitle>
-        <DialogContent>
-          <Box component="form" sx={{ display: 'grid', gap: 2, width: 420, mt: 1, position: 'relative' }}>
-            <TextField disabled={adding} label="Name" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} fullWidth />
-            <TextField disabled={adding} label="Description" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} fullWidth />
-            <TextField
-              disabled={adding}
-              label="Price"
-              value={form.price}
-              onChange={(e) => setForm(f => ({ ...f, price: e.target.value }))}
-              fullWidth
-              error={form.price !== '' && Number.isNaN(Number(form.price))}
-              helperText={form.price !== '' && Number.isNaN(Number(form.price)) ? 'Enter a valid number' : ''}
-            />
-              {addStatus.isError && <Alert severity="error">Failed to add product: {String(addStatus.error?.message ?? addStatus.error)}</Alert>}
-          </Box>
-        </DialogContent>
-          <DialogActions>
-          <Button onClick={() => setOpen(false)} disabled={adding}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              const priceNum = Number(form.price ?? 0)
-              const payload = { name: form.name, description: form.description, price: Number.isNaN(priceNum) ? 0 : priceNum }
-              setIsAdding(true)
-              addProduct(payload, {
-                onSuccess: () => {
-                  setOpen(false)
-                  setForm({ name: '', description: '', price: '' })
-                  setSnack({ open: true, message: 'Product added', severity: 'success' })
-                  setIsAdding(false)
-                },
-                onError: () => {
-                  setIsAdding(false)
-                }
-              })
-            }}
-            disabled={adding || !form.name || (form.price !== '' && Number.isNaN(Number(form.price)))}
-          >
-            {adding ? (
-              <>
-                <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
-                Adding...
-              </>
-            ) : (
-              'Add'
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddProductDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        adding={adding}
+        addError={addStatus.error}
+        onAdd={(payload, options) => {
+          setIsAdding(true)
+          addProduct(payload, {
+            ...(options || {}),
+            onSuccess: (data) => {
+              setIsAdding(false)
+              setSnack({ open: true, message: 'Product added', severity: 'success' })
+              if (options?.onSuccess) options.onSuccess(data)
+            },
+            onError: (err) => {
+              setIsAdding(false)
+              if (options?.onError) options.onError(err)
+            }
+          })
+        }}
+      />
+        
+        
+      
       <Snackbar
         open={snack.open}
         autoHideDuration={3000}
