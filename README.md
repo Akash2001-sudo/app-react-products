@@ -33,3 +33,11 @@ npm install
 ```
 
 If you are using a remote API, set `VITE_PRODUCTS_API` in `.env` or your local environment to point to the endpoint returning product records.
+
+Note: I added `@mui/icons-material` and other UI/utility packages. After pulling the changes, please run:
+
+```powershell
+npm install
+```
+
+This will ensure the icon package is available locally and Vite can resolve imports like `@mui/icons-material/Delete`.

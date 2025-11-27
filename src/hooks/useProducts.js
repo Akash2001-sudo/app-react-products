@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchProductsApi, createProductApi } from '../api/products'
+import { fetchProductsApi, createProductApi, deleteProductsApi } from '../api/products'
 
 export function useProducts(apiUrl) {
   const queryClient = useQueryClient()
@@ -22,10 +22,17 @@ export function useProducts(apiUrl) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products', apiUrl] })
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: (ids) => deleteProductsApi(apiUrl, ids),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products', apiUrl] })
+  })
+
   return {
     ...query,
     addProduct: mutation.mutate,
-    addStatus: mutation
+    addStatus: mutation,
+    deleteProducts: deleteMutation.mutate,
+    deleteStatus: deleteMutation
   }
 }
 

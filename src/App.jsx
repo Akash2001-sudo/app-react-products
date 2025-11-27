@@ -10,6 +10,10 @@ import {
   Container,
   Paper,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   TextField,
   Box,
   CircularProgress,
@@ -17,6 +21,9 @@ import {
   Snackbar
   , Backdrop
 } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material/Add'
+import { IconButton, Tooltip, Badge } from '@mui/material'
 
 const columns = [
   { field: 'name', headerName: 'Name', flex: 1, minWidth: 200 },
@@ -50,7 +57,7 @@ export default function App() {
   // Read API URL from Vite env var VITE_PRODUCTS_API; fallback to /api/products
   const apiUrl = import.meta.env.VITE_PRODUCTS_API || '/api/products'
 
-  const { data, isLoading, isError, error, addProduct, addStatus } = useProducts(apiUrl)
+  const { data, isLoading, isError, error, addProduct, addStatus, deleteProducts, deleteStatus } = useProducts(apiUrl)
   const rows = useMemo(() => normalizeItems(data ?? []), [data])
   const [filterText, setFilterText] = useState('')
   const displayRows = useMemo(() => {
@@ -63,6 +70,9 @@ export default function App() {
   const [open, setOpen] = useState(false)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [isAdding, setIsAdding] = useState(false)
+  const [selectedIds, setSelectedIds] = useState([])
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // addStatus is the mutation object coming from the hook
   const adding = isAdding || addStatus.isLoading
@@ -74,9 +84,7 @@ export default function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Products
           </Typography>
-          <Button variant="contained" color="secondary" onClick={() => setOpen(true)} sx={{ mr: 2 }} startIcon={adding ? <CircularProgress size={16} color="inherit" /> : null}>
-            Add Product
-          </Button>
+          {/* Add Product button moved to the content action area for both deletion/search */}
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             Catalog
           </Typography>
@@ -102,6 +110,20 @@ export default function App() {
             </Box>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <TextField size="small" placeholder="Search products..." value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+                  <Tooltip title="Add product">
+                    <IconButton color="primary" onClick={() => setOpen(true)} disabled={adding}>
+                      {adding ? <CircularProgress size={18} color="inherit" /> : <AddIcon />}
+                    </IconButton>
+                  </Tooltip>
+              <Tooltip title={selectedIds.length === 0 ? 'Select rows to delete' : `Delete (${selectedIds.length})`}>
+                <span>
+                  <IconButton color="error" onClick={() => setConfirmOpen(true)} disabled={selectedIds.length === 0 || deleteStatus.isLoading || isDeleting}>
+                    <Badge badgeContent={selectedIds.length} color="error">
+                      <DeleteIcon />
+                    </Badge>
+                  </IconButton>
+                </span>
+              </Tooltip>
             </Box>
           </Box>
 
@@ -111,7 +133,18 @@ export default function App() {
                 <CircularProgress />
               </Box>
             ) : (
-              <ProductTable rows={displayRows} columns={columns} loading={isLoading} error={isError ? error : null} />
+              <ProductTable
+                rows={displayRows}
+                columns={columns}
+                loading={isLoading}
+                error={isError ? error : null}
+                rowSelectionModel={selectedIds}
+                onRowSelectionModelChange={(newSelection) => {
+                  if (Array.isArray(newSelection)) setSelectedIds(newSelection)
+                  else if (newSelection instanceof Set) setSelectedIds(Array.from(newSelection))
+                  else setSelectedIds([newSelection])
+                }}
+              />
             )}
           </Box>
         </Paper>
@@ -144,6 +177,38 @@ export default function App() {
           })
         }}
       />
+      {/* Confirm delete dialog */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirm delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete {selectedIds.length} selected item(s)?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} disabled={isDeleting || deleteStatus.isLoading}>Cancel</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              setIsDeleting(true)
+              deleteProducts(selectedIds, {
+                onSuccess: () => {
+                  setIsDeleting(false)
+                  setConfirmOpen(false)
+                  setSelectedIds([])
+                  setSnack({ open: true, message: 'Deleted', severity: 'success' })
+                },
+                onError: (err) => {
+                  setIsDeleting(false)
+                  setSnack({ open: true, message: String(err), severity: 'error' })
+                }
+              })
+            }}
+            disabled={isDeleting || deleteStatus.isLoading}
+          >
+            {isDeleting || deleteStatus.isLoading ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
         
         
       

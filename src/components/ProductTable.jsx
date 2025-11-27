@@ -2,7 +2,7 @@ import React from 'react'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
-export default function ProductTable({ rows, loading, error, columns, pageSize = 5 }) {
+export default function ProductTable({ rows, loading, error, columns, pageSize = 5, checkboxSelection = true, rowSelectionModel = [], onRowSelectionModelChange }) {
   return (
     <Box sx={{ height: '100%', width: '100%' }}>
       {loading ? (
@@ -16,6 +16,9 @@ export default function ProductTable({ rows, loading, error, columns, pageSize =
           pageSize={pageSize}
           rowsPerPageOptions={[pageSize]}
           disableSelectionOnClick
+          checkboxSelection={checkboxSelection}
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={onRowSelectionModelChange}
           components={{ Toolbar: GridToolbar }}
           sx={{
             border: 'none',
