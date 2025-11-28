@@ -26,9 +26,9 @@ export default function ProductDialog({ open, onClose, onSave, onAdd, adding, ad
   }
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} PaperProps={{ sx: { borderRadius: 3 } }}>
       <DialogTitle>{isEdit ? 'Edit Product' : 'Add Product'}</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ paddingTop: '1rem !important' }}>
         <Box component="form" sx={{ display: 'grid', gap: 2, width: 420, mt: 1 }}>
           <TextField disabled={adding} label="Name" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} fullWidth />
           <TextField disabled={adding} label="Description" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} fullWidth />

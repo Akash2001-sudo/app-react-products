@@ -72,7 +72,7 @@ export default function App() {
       minWidth: 120,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ fontWeight: 700, color: 'primary.main' }}>${Number(params.value).toFixed(2)}</Box>
+          <Box sx={{ fontWeight: 700, color: 'primary.main' }}>₹{Number(params.value).toFixed(2)}</Box>
         </Box>
       )
     },
@@ -100,7 +100,7 @@ export default function App() {
 
   return (
     <>
-      <AppBar position="static" elevation={3} sx={{ background: 'linear-gradient(90deg,#2563eb 0%, #1e40af 100%)' }}>
+      <AppBar position="static" elevation={0} sx={{ background: 'linear-gradient(90deg, #2563eb 0%, #1e40af 100%)' }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Products
@@ -111,8 +111,8 @@ export default function App() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
-        <Paper elevation={4} sx={{ p: 2, borderRadius: 3 }} className="card-shadow">
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
+        <Paper elevation={4} sx={{ p: 2, borderRadius: 3 }}>
           {isError && (
             <Box mb={2}>
               <Alert severity="error">Failed to load products: {error?.message ?? String(error)}</Alert>
@@ -169,6 +169,19 @@ export default function App() {
           </Box>
         </Paper>
       </Container>
+
+      <Box component="footer" sx={{ p: 2, mt: 'auto', backgroundColor: 'background.paper', borderTop: '1px solid #e0e0e0' }}>
+        <Container maxWidth="lg">
+          <Typography variant="body2" color="text.secondary" align="center">
+            {'Copyright © '}
+            <a color="inherit" href="https://mui.com/">
+              Your Website
+            </a>{' '}
+            {new Date().getFullYear()}
+            {'.'}
+          </Typography>
+        </Container>
+      </Box>
 
       <Backdrop open={adding} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <CircularProgress color="inherit" />

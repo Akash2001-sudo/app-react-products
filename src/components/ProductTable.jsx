@@ -15,7 +15,6 @@ export default function ProductTable({ rows, loading, error, columns, pageSize =
           columns={columns}
           pageSize={pageSize}
           rowsPerPageOptions={[pageSize]}
-          disableSelectionOnClick
           checkboxSelection={checkboxSelection}
           rowSelectionModel={rowSelectionModel}
           onRowSelectionModelChange={onRowSelectionModelChange}
@@ -23,7 +22,8 @@ export default function ProductTable({ rows, loading, error, columns, pageSize =
           sx={{
             border: 'none',
             '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(37,99,235,0.06)' },
-            '& .MuiDataGrid-columnHeaders': { backgroundColor: 'rgba(37,99,235,0.06)' }
+            '& .MuiDataGrid-columnHeaders': { backgroundColor: 'rgba(37,99,235,0.06)' },
+            boxShadow: 2,
           }}
         />
       )}
