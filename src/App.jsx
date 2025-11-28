@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useMemo, useState } from 'react'
 import useProducts from './hooks/useProducts'
 import ProductTable from './components/ProductTable'
-import AddProductDialog from './components/AddProductDialog'
+import ProductDialog from './components/ProductDialog'
 import {
   AppBar,
   Toolbar,
@@ -23,24 +23,8 @@ import {
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Tooltip, Badge } from '@mui/material'
-
-const columns = [
-  { field: 'name', headerName: 'Name', flex: 1, minWidth: 200 },
-  { field: 'description', headerName: 'Description', flex: 2, minWidth: 300 },
-  {
-    field: 'price',
-    headerName: 'Price',
-    type: 'number',
-    flex: 0.6,
-    minWidth: 120,
-    renderCell: (params) => (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Box sx={{ fontWeight: 700, color: 'primary.main' }}>${Number(params.value).toFixed(2)}</Box>
-      </Box>
-    )
-  }
-]
 
 function normalizeItems(data) {
   // Map a generic API response into the DataGrid row shape we expect
@@ -55,10 +39,9 @@ function normalizeItems(data) {
 
 export default function App() {
   // Read API URL from Vite env var VITE_PRODUCTS_API; fallback to /api/products
- const apiUrl = import.meta.env.VITE_PRODUCTS_API ?? "https://core-products.onrender.com/api/products";
+  const apiUrl = import.meta.env.VITE_PRODUCTS_API ?? "https://core-products.onrender.com/api/products";
 
-
-  const { data, isLoading, isError, error, addProduct, addStatus, deleteProducts, deleteStatus } = useProducts(apiUrl)
+  const { data, isLoading, isError, error, addProduct, addStatus, updateProduct, updateStatus, deleteProducts, deleteStatus } = useProducts(apiUrl)
   const rows = useMemo(() => normalizeItems(data ?? []), [data])
   const [filterText, setFilterText] = useState('')
   const displayRows = useMemo(() => {
@@ -67,16 +50,53 @@ export default function App() {
     return rows.filter(r => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || String(r.price).toLowerCase().includes(q))
   }, [rows, filterText])
 
-  // dialog + form state for adding a new product
   const [open, setOpen] = useState(false)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [isAdding, setIsAdding] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
 
-  // addStatus is the mutation object coming from the hook
-  const adding = isAdding || addStatus.isLoading
+  const adding = isAdding || addStatus.isLoading || isSaving || updateStatus.isLoading
+
+  const columns = [
+    { field: 'name', headerName: 'Name', flex: 1, minWidth: 200 },
+    { field: 'description', headerName: 'Description', flex: 2, minWidth: 300 },
+    {
+      field: 'price',
+      headerName: 'Price',
+      type: 'number',
+      flex: 0.6,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ fontWeight: 700, color: 'primary.main' }}>${Number(params.value).toFixed(2)}</Box>
+        </Box>
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      sortable: false,
+      filterable: false,
+      disableExport: true,
+      renderCell: (params) => (
+        <Tooltip title="Edit product">
+          <IconButton
+            color="primary"
+            onClick={() => {
+              setEditingProduct(params.row)
+              setOpen(true)
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+      )
+    }
+  ]
 
   return (
     <>
@@ -85,7 +105,6 @@ export default function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Products
           </Typography>
-          {/* Add Product button moved to the content action area for both deletion/search */}
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             Catalog
           </Typography>
@@ -111,11 +130,11 @@ export default function App() {
             </Box>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <TextField size="small" placeholder="Search products..." value={filterText} onChange={(e) => setFilterText(e.target.value)} />
-                  <Tooltip title="Add product">
-                    <IconButton color="primary" onClick={() => setOpen(true)} disabled={adding}>
-                      {adding ? <CircularProgress size={18} color="inherit" /> : <AddIcon />}
-                    </IconButton>
-                  </Tooltip>
+              <Tooltip title="Add product">
+                <IconButton color="primary" onClick={() => { setEditingProduct(null); setOpen(true) }} disabled={adding}>
+                  {adding ? <CircularProgress size={18} color="inherit" /> : <AddIcon />}
+                </IconButton>
+              </Tooltip>
               <Tooltip title={selectedIds.length === 0 ? 'Select rows to delete' : `Delete (${selectedIds.length})`}>
                 <span>
                   <IconButton color="error" onClick={() => setConfirmOpen(true)} disabled={selectedIds.length === 0 || deleteStatus.isLoading || isDeleting}>
@@ -151,17 +170,16 @@ export default function App() {
         </Paper>
       </Container>
 
-      {/* Full-screen loading backdrop while adding */}
       <Backdrop open={adding} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <CircularProgress color="inherit" />
       </Backdrop>
 
-      {/* Add Product Dialog */}
-      <AddProductDialog
+      <ProductDialog
         open={open}
         onClose={() => setOpen(false)}
         adding={adding}
-        addError={addStatus.error}
+        addError={addStatus.error || updateStatus.error}
+        product={editingProduct}
         onAdd={(payload, options) => {
           setIsAdding(true)
           addProduct(payload, {
@@ -177,8 +195,22 @@ export default function App() {
             }
           })
         }}
+        onSave={(payload, options) => {
+          setIsSaving(true)
+          updateProduct(payload, {
+            ...(options || {}),
+            onSuccess: (data) => {
+              setIsSaving(false)
+              setSnack({ open: true, message: 'Product saved', severity: 'success' })
+              if (options?.onSuccess) options.onSuccess(data)
+            },
+            onError: (err) => {
+              setIsSaving(false)
+              if (options?.onError) options.onError(err)
+            }
+          })
+        }}
       />
-      {/* Confirm delete dialog */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Confirm delete</DialogTitle>
         <DialogContent>
@@ -210,8 +242,6 @@ export default function App() {
           </Button>
         </DialogActions>
       </Dialog>
-        
-        
       
       <Snackbar
         open={snack.open}

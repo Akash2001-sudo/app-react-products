@@ -15,6 +15,16 @@ export async function createProductApi(apiUrl, payload) {
   return res.json()
 }
 
+export async function updateProductApi(apiUrl, payload) {
+  const res = await fetch(`${apiUrl}/${payload.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+
 export async function deleteProductApi(apiUrl, id) {
   // delete via DELETE /api/products/:id
   const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
@@ -30,5 +40,6 @@ export async function deleteProductsApi(apiUrl, ids) {
 
 export default {
   fetchProductsApi,
-  createProductApi
+  createProductApi,
+  updateProductApi
 }
