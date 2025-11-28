@@ -25,6 +25,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Tooltip, Badge } from '@mui/material'
+import { motion } from 'framer-motion';
 
 function normalizeItems(data) {
   // Map a generic API response into the DataGrid row shape we expect
@@ -36,6 +37,76 @@ function normalizeItems(data) {
     price: Number(item.price ?? item.cost ?? 0)
   }))
 }
+
+const AnimatedTitle = () => {
+  const text = "Products";
+  const letters = Array.from(text);
+
+  const container = {
+    hidden: { opacity: 0 },
+    visible: (i = 1) => ({
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.04 * i },
+    }),
+  };
+
+  const child = {
+    visible: {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      transition: {
+        type: "spring",
+        damping: 12,
+        stiffness: 100,
+      },
+    },
+    hidden: {
+      opacity: 0,
+      x: -20,
+      y: 10,
+      transition: {
+        type: "spring",
+        damping: 12,
+        stiffness: 100,
+      },
+    },
+  };
+
+  return (
+    <motion.div
+      style={{ display: "flex", overflow: "hidden" }}
+      variants={container}
+      initial="hidden"
+      animate="visible"
+      component="div"
+    >
+      {letters.map((letter, index) => (
+        <motion.span
+          key={index}
+          variants={child}
+          style={{
+            transformOrigin: '50% 100%',
+            transformStyle: 'preserve-3d',
+          }}
+          animate={{
+            rotate: 360,
+            transition: {
+              duration: 2,
+              repeat: Infinity,
+              repeatDelay: 3,
+              ease: "easeInOut",
+              delay: index * 0.1,
+            },
+          }}
+        >
+          {letter}
+        </motion.span>
+      ))}
+    </motion.div>
+  );
+};
+
 
 export default function App() {
   // Read API URL from Vite env var VITE_PRODUCTS_API; fallback to /api/products
@@ -100,10 +171,13 @@ export default function App() {
 
   return (
     <>
-      <AppBar position="static" elevation={0} sx={{ background: 'linear-gradient(90deg, #2563eb 0%, #1e40af 100%)' }}>
-        <Toolbar>
+      <AppBar position="static" elevation={0} sx={{
+        background: 'linear-gradient(90deg, #654ea3 0%, #eaafc8 100%)',
+        boxShadow: '0 4px 20px 0 rgba(0,0,0,0.1)',
+      }}>
+        <Toolbar sx={{ p: '0.5rem 1.5rem' }}>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Products
+            <AnimatedTitle />
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             Catalog
