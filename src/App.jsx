@@ -29,6 +29,7 @@ import { motion } from 'framer-motion';
 import { ThemeContext } from './context/ThemeContext'
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import FallingStars from './components/FallingStars';
 
 function normalizeItems(data) {
   // Map a generic API response into the DataGrid row shape we expect
@@ -54,7 +55,7 @@ const AnimatedTitle = () => {
   };
 
   const child = {
-    visible: {
+    visible: { 
       opacity: 1,
       x: 0,
       y: 0,
@@ -139,7 +140,7 @@ export default function App() {
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1, minWidth: 200 },
     { field: 'description', headerName: 'Description', flex: 2, minWidth: 300 },
-    {
+    { 
       field: 'price',
       headerName: 'Price',
       type: 'number',
@@ -178,8 +179,10 @@ export default function App() {
       <AppBar position="static" elevation={0} sx={{
         background: 'linear-gradient(90deg, #654ea3 0%, #eaafc8 100%)',
         boxShadow: '0 4px 20px 0 rgba(0,0,0,0.1)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <Toolbar sx={{ p: '0.5rem 1.5rem' }}>
+        <FallingStars />        <Toolbar sx={{ p: '0.5rem 1.5rem' }}>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             <AnimatedTitle />
           </Typography>
