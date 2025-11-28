@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useContext } from 'react'
 import useProducts from './hooks/useProducts'
 import ProductTable from './components/ProductTable'
 import ProductDialog from './components/ProductDialog'
@@ -26,6 +26,9 @@ import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Tooltip, Badge } from '@mui/material'
 import { motion } from 'framer-motion';
+import { ThemeContext } from './context/ThemeContext'
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 
 function normalizeItems(data) {
   // Map a generic API response into the DataGrid row shape we expect
@@ -109,6 +112,7 @@ const AnimatedTitle = () => {
 
 
 export default function App() {
+  const { toggleTheme, mode } = useContext(ThemeContext);
   // Read API URL from Vite env var VITE_PRODUCTS_API; fallback to /api/products
   const apiUrl = import.meta.env.VITE_PRODUCTS_API ?? "https://core-products.onrender.com/api/products";
 
@@ -179,6 +183,9 @@ export default function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             <AnimatedTitle />
           </Typography>
+          <IconButton onClick={toggleTheme} color="inherit">
+            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             Catalog
           </Typography>
