@@ -1,45 +1,58 @@
 // Lightweight API client for products
-export async function fetchProductsApi(apiUrl) {
-  const res = await fetch(apiUrl)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
-}
-
-export async function createProductApi(apiUrl, payload) {
+export async function fetchProductsApi(apiUrl, token) {
   const res = await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export async function updateProductApi(apiUrl, payload) {
+export async function createProductApi(apiUrl, payload, token) {
+  const res = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function updateProductApi(apiUrl, payload, token) {
   const res = await fetch(`${apiUrl}/${payload.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export async function deleteProductApi(apiUrl, id) {
+export async function deleteProductApi(apiUrl, id, token) {
   // delete via DELETE /api/products/:id
-  const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  const res = await fetch(`${apiUrl}/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export async function deleteProductsApi(apiUrl, ids) {
-  if (!Array.isArray(ids)) ids = [ids]
-  const results = await Promise.all(ids.map(id => deleteProductApi(apiUrl, id)))
-  return results
+export async function deleteProductsApi(apiUrl, ids, token) {
+  if (!Array.isArray(ids)) ids = [ids];
+  const results = await Promise.all(
+    ids.map((id) => deleteProductApi(apiUrl, id, token))
+  );
+  return results;
 }
 
 export default {
   fetchProductsApi,
   createProductApi,
-  updateProductApi
-}
+  updateProductApi,
+};

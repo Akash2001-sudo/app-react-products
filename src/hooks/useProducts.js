@@ -1,43 +1,58 @@
-import { useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useContext } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchProductsApi,
   createProductApi,
   updateProductApi,
-  deleteProductsApi
-} from '../api/products'
+  deleteProductsApi,
+} from "../api/products";
+import { AuthContext } from "../context/AuthContext";
 
 export function useProducts(apiUrl) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const { token } = useContext(AuthContext);
 
-  const fetchProducts = useCallback(async () => fetchProductsApi(apiUrl), [apiUrl])
+  const fetchProducts = useCallback(
+    async () => fetchProductsApi(apiUrl, token),
+    [apiUrl, token]
+  );
 
   const query = useQuery({
-    queryKey: ['products', apiUrl],
+    queryKey: ["products", apiUrl, token],
     queryFn: fetchProducts,
     staleTime: 1000 * 60,
     refetchOnWindowFocus: false,
-    retry: 1
-  })
+    retry: 1,
+    enabled: !!token, // only fetch if token is present
+  });
 
-  const createProduct = useCallback(async (payload) => createProductApi(apiUrl, payload), [apiUrl])
+  const createProduct = useCallback(
+    async (payload) => createProductApi(apiUrl, payload, token),
+    [apiUrl, token]
+  );
 
   const createMutation = useMutation({
     mutationFn: createProduct,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products', apiUrl] })
-  })
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["products", apiUrl, token] }),
+  });
 
-  const updateProduct = useCallback(async (payload) => updateProductApi(apiUrl, payload), [apiUrl])
+  const updateProduct = useCallback(
+    async (payload) => updateProductApi(apiUrl, payload, token),
+    [apiUrl, token]
+  );
 
   const updateMutation = useMutation({
     mutationFn: updateProduct,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products', apiUrl] })
-  })
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["products", apiUrl, token] }),
+  });
 
   const deleteMutation = useMutation({
-    mutationFn: (ids) => deleteProductsApi(apiUrl, ids),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products', apiUrl] })
-  })
+    mutationFn: (ids) => deleteProductsApi(apiUrl, ids, token),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["products", apiUrl, token] }),
+  });
 
   return {
     ...query,
@@ -46,8 +61,8 @@ export function useProducts(apiUrl) {
     updateProduct: updateMutation.mutate,
     updateStatus: updateMutation,
     deleteProducts: deleteMutation.mutate,
-    deleteStatus: deleteMutation
-  }
+    deleteStatus: deleteMutation,
+  };
 }
 
-export default useProducts
+export default useProducts;
