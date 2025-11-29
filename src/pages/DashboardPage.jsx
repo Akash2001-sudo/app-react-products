@@ -197,9 +197,6 @@ export default function DashboardPage() {
               <LogoutIcon />
             </IconButton>
           </Tooltip>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            Catalog
-          </Typography>
         </Toolbar>
       </AppBar>
 
